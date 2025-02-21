@@ -1,0 +1,9 @@
+# 忽略所有 .env 文件
+**/.env
+
+# 其他不需要的文件
+**/__pycache__
+**/*.pyc
+**/.DS_Store
+**/.git
+**/.gitignore 

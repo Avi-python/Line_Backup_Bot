@@ -17,8 +17,17 @@ SAVING_DIR = os.getenv('SAVING_DIR')
 line_bot_api = LineBotApi(CHANNEL_ACCESS_TOKEN)
 handler = WebhookHandler(CHANNEL_SECRET)
 
+# 確保儲存目錄存在並可寫入
 if not os.path.exists(SAVING_DIR):
-    os.makedirs(SAVING_DIR)
+    try:
+        os.makedirs(SAVING_DIR)
+    except Exception as e:
+        print(f"Error creating storage directory: {e}")
+        exit(1)
+
+if not os.access(SAVING_DIR, os.W_OK):
+    print(f"Storage directory {SAVING_DIR} is not writable")
+    exit(1)
 
 @app.route("/callback", methods=["POST"])
 def callback():

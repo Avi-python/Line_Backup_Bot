@@ -1,2 +1,2 @@
 # Line Bot auto backup
-- automatively backup images and videos in chat.
+- automatically backup images and videos in chat.
