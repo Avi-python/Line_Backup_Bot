@@ -1,0 +1,67 @@
+from flask import Flask, request, abort
+from linebot import LineBotApi, WebhookHandler
+from linebot.exceptions import InvalidSignatureError
+from linebot.models import MessageEvent, VideoMessage, ImageMessage
+from dotenv import load_dotenv
+import os
+import uuid
+
+load_dotenv()
+
+app = Flask(__name__)
+
+CHANNEL_ACCESS_TOKEN = os.getenv('CHANNEL_ACCESS_TOKEN')
+CHANNEL_SECRET = os.getenv('CHANNEL_SECRET')
+SAVING_DIR = os.getenv('SAVING_DIR')
+
+line_bot_api = LineBotApi(CHANNEL_ACCESS_TOKEN)
+handler = WebhookHandler(CHANNEL_SECRET)
+
+if not os.path.exists(SAVING_DIR):
+    os.makedirs(SAVING_DIR)
+
+@app.route("/callback", methods=["POST"])
+def callback():
+    signature = request.headers["X-Line-Signature"]
+    body = request.get_data(as_text=True)
+
+    try:
+        handler.handle(body, signature)
+    except InvalidSignatureError:
+        abort(400)
+
+    return "OK"
+
+
+# Save Image
+@handler.add(MessageEvent, message=ImageMessage)
+def handle_image_message(event):
+    message_content = line_bot_api.get_message_content(event.message.id)
+    image_data = message_content.content
+    user_id = event.source.user_id
+    # group_id = event.source.group_id
+
+    file_name = str(uuid.uuid4()) + ".jpg"
+    file_path = os.path.join(SAVING_DIR, file_name)
+    with open(file_path, 'wb') as f:
+        for chunk in message_content.iter_content():
+            f.write(chunk)
+
+
+# Save Video
+@handler.add(MessageEvent, message=VideoMessage)
+def handle_video_message(event):
+    message_content = line_bot_api.get_message_content(event.message.id)
+    image_data = message_content.content
+    user_id = event.source.user_id
+    # group_id = event.source.group_id
+
+    file_name = str(uuid.uuid4()) + ".mp4"
+    file_path = os.path.join(SAVING_DIR, file_name)
+    with open(file_path, 'wb') as f:
+        for chunk in message_content.iter_content():
+            f.write(chunk)
+    
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=8080)

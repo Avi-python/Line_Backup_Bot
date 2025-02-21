@@ -1,0 +1,17 @@
+# Virtual environment
+venv/
+env/
+.env/
+.venv/
+
+# Local environment variable
+.env
+
+# Python packages
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
