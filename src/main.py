@@ -5,10 +5,14 @@ from linebot.models import MessageEvent, VideoMessage, ImageMessage
 from dotenv import load_dotenv
 import os
 import uuid
+import logging
 
 load_dotenv()
 
 app = Flask(__name__)
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 CHANNEL_ACCESS_TOKEN = os.getenv('CHANNEL_ACCESS_TOKEN')
 CHANNEL_SECRET = os.getenv('CHANNEL_SECRET')
@@ -31,13 +35,17 @@ if not os.access(SAVING_DIR, os.W_OK):
 
 @app.route("/callback", methods=["POST"])
 def callback():
-    signature = request.headers["X-Line-Signature"]
+    logger.debug("Received callback request")
+    logger.info(f"Headers: {dict(request.headers)}")
+
+    x_line_signature = request.headers["X-Line-Signature"]
     body = request.get_data(as_text=True)
 
     try:
-        handler.handle(body, signature)
-    except InvalidSignatureError:
-        abort(400)
+        handler.handle(body, x_line_signature)
+    except InvalidSignatureError as e:
+        logger.error(f"Signature validation failed: {str(e)}")
+        abort(400, description=str(e))
 
     return "OK"
 
